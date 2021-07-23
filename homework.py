@@ -68,6 +68,7 @@ def main():
             time.sleep(60 * 60)  # Опрашивать раз в час
 
         except Exception as e:
+            logger.exception(f'Бот упал с ошибкой: {e}')
             send_message(f'Бот упал с ошибкой: {e}')
             time.sleep(5)
 
