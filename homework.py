@@ -3,8 +3,7 @@ import time
 import requests
 import logging
 from logging.handlers import RotatingFileHandler
-
-from telegram import Bot
+import telegram
 from dotenv import load_dotenv
 
 
@@ -23,7 +22,7 @@ PRAKTIKUM_TOKEN = os.getenv('PRAKTIKUM_TOKEN')
 TELEGRAM_TOKEN = os.getenv('TELEGRAM_TOKEN')
 CHAT_ID = os.getenv('TELEGRAM_CHAT_ID')
 
-bot = Bot(token=TELEGRAM_TOKEN)
+bot = telegram.Bot(token=TELEGRAM_TOKEN)
 
 
 def parse_homework_status(homework):
