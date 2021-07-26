@@ -113,7 +113,7 @@ def main():
                     date_updated, '%Y-%m-%dT%H:%M:%SZ')
                 current_timestamp = time.mktime(structured_date)
             except IndexError:
-                message = 'Новой домашки нет'
+                logging.info('Новой домашки нет')
             send_message(message)
             # Опрашивать раз в двадцать минут, ограничение Heroku
             time.sleep(20 * 60)
