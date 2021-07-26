@@ -83,7 +83,9 @@ def get_homeworks(current_timestamp):
         return homework_statuses.json()
     except Exception:
         logging.exception(logging_error)
-        bot.send_message(chat_id=CHAT_ID, text=logging.error)
+        bot.send_message(
+            chat_id=CHAT_ID,
+            text=f'Проблема в get_homeworks(), {logging.error}')
 
 
 def send_message(message):
@@ -100,15 +102,19 @@ def main():
     while True:
         try:
             homeworks = get_homeworks(current_timestamp)
-            homework = homeworks['homeworks'][0]
-            logging.info('Бот получил домашку')
-            message = parse_homework_status(homework)
-            send_message(message)
-            # обновляем время проверки домашки
-            date_updated = homework.get('date_updated')
-            structured_date = time.strptime(date_updated, '%Y-%m-%dT%H:%M:%SZ')
-            current_timestamp = time.mktime(structured_date)
+            try:
+                homework = homeworks['homeworks'][0]
+                logging.info('Бот получил домашку')
+                message = parse_homework_status(homework)
 
+                # Обновляем время проверки домашки
+                date_updated = homework.get('date_updated')
+                structured_date = time.strptime(
+                    date_updated, '%Y-%m-%dT%H:%M:%SZ')
+                current_timestamp = time.mktime(structured_date)
+            except IndexError:
+                message = 'Новой домашки нет'
+            send_message(message)
             # Опрашивать раз в двадцать минут, ограничение Heroku
             time.sleep(20 * 60)
 
