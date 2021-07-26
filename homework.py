@@ -108,7 +108,7 @@ def main():
             date_updated = homework.get('date_updated')
             structured_date = time.strptime(date_updated, '%Y-%m-%dT%H:%M:%SZ')
             current_timestamp = time.mktime(structured_date)
-            time.sleep(5 * 60)  # Опрашивать раз в пять минут
+            time.sleep(20 * 60)  # Опрашивать раз в двадцать минут, ограничение Heroku
 
         except Exception as e:
             logging.exception(f'{bot_error} {e}')
