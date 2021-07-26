@@ -106,7 +106,7 @@ def main():
                 homework = homeworks['homeworks'][0]
                 logging.info('Бот получил домашку')
                 message = parse_homework_status(homework)
-
+                send_message(message)
                 # Обновляем время проверки домашки
                 date_updated = homework.get('date_updated')
                 structured_date = time.strptime(
@@ -114,7 +114,6 @@ def main():
                 current_timestamp = time.mktime(structured_date)
             except IndexError:
                 logging.info('Новой домашки нет')
-            send_message(message)
             # Опрашивать раз в двадцать минут, ограничение Heroku
             time.sleep(20 * 60)
 
