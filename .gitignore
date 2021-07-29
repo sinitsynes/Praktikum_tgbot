@@ -150,3 +150,8 @@ static/
 posts/static/
 media/
 
+# логи
+logfile.log
+*.1
+*.2
+*.3

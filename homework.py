@@ -26,7 +26,7 @@ try:
     PRAKTIKUM_TOKEN = os.environ['PRAKTIKUM_TOKEN']
     TELEGRAM_TOKEN = os.environ['TELEGRAM_TOKEN']
     CHAT_ID = os.environ['TELEGRAM_CHAT_ID']
-except Exception as e:
+except KeyError as e:
     token_error = f'Ошибка с токеном {e}.'
     logging.exception(token_error)
     sys.exit('Бот остановлен, нет токена')
@@ -40,7 +40,7 @@ HOMEWORK_STATUSES = {
     'reviewing': 'Она проходит ревью'
 }
 
-TIME_SLEEP = 20 * 60
+TIME_SLEEP = 10 * 60
 
 bot = telegram.Bot(token=TELEGRAM_TOKEN)
 
@@ -53,15 +53,14 @@ def parse_homework_status(homework):
         return name_error
 
     homework_status = homework.get('status')
-    if homework_status not in dict(HOMEWORK_STATUSES):
-        unknown_status = HOMEWORK_STATUSES.get(
-            homework_status, 'Неизвестный статус')
-        status_error = f'Сервер не вернул статус работы: {unknown_status}'
+
+    if homework_status not in HOMEWORK_STATUSES:
+        status_error = 'Сервер не вернул статус работы'
         logging.error(status_error)
         return status_error
-    else:
-        verdict = HOMEWORK_STATUSES[homework_status]
-        return f'У вас проверили работу "{homework_name}"!\n\n{verdict}'
+
+    verdict = HOMEWORK_STATUSES[homework_status]
+    return f'У вас проверили работу "{homework_name}"!\n\n{verdict}'
 
 
 def get_homeworks(current_timestamp):
@@ -77,13 +76,18 @@ def get_homeworks(current_timestamp):
             params=from_date
         )
         status_code = homework_statuses.status_code
+
+        if status_code != 200:
+            http_error = f'Ошибка ответа сервера. Status: {status_code}'
+            logging.error(http_error)
+            send_message(http_error)
+
         return homework_statuses.json()
 
-    except status_code != 200:
-        http_error = f'Неверный статус ответа сервера: {status_code}'
-        logging.error(http_error)
-        send_message(http_error)
-        sys.exit(f'Бот остановлен из-за ошибки: {http_error}')
+    except JSONDecodeError:
+        decode_error_message = 'Ошибка декодирования JSON в ответе сервера'
+        logging.error(decode_error_message)
+        send_message(decode_error_message)
 
     except Exception as e:
         exception_error = f'Проблема в get_homeworks(), {e}'
@@ -93,6 +97,7 @@ def get_homeworks(current_timestamp):
 
 
 def send_message(message):
+    logging.info(f'Бот отправит сообщение {message}')
     return bot.send_message(chat_id=CHAT_ID, text=message)
 
 
@@ -106,25 +111,16 @@ def main():
         try:
             homeworks = get_homeworks(current_timestamp)
             homeworks_list = homeworks.get('homeworks')
+            if len(homeworks_list) == 0:
+                logging.info('Новой домашки нет')
+                time.sleep(TIME_SLEEP)
             homework = homeworks_list[0]
             message = parse_homework_status(homework)
             send_message(message)
-            logging.info(f'Бот отправил сообщение {message}')
             # Обновляем время проверки домашки
             current_date = homeworks.get('current_date')
             current_timestamp = current_date
             time.sleep(TIME_SLEEP)
-
-        except IndexError:
-            logging.info('Новой домашки нет')
-            # Опрашивать раз в двадцать минут, ограничение Heroku
-            time.sleep(TIME_SLEEP)
-
-        except JSONDecodeError:
-            decode_error_message = 'Ошибка декодирования JSON в ответе сервера'
-            logging.error(decode_error_message)
-            send_message(decode_error_message)
-            sys.exit(decode_error_message)
 
         except Exception as e:
             logging.exception(f'{BOT_ERROR} {e}')
