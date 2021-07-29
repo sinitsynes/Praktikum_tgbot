@@ -111,12 +111,15 @@ def main():
         try:
             homeworks = get_homeworks(current_timestamp)
             homeworks_list = homeworks.get('homeworks')
+
             if len(homeworks_list) == 0:
                 logging.info('Новой домашки нет')
                 time.sleep(TIME_SLEEP)
-            homework = homeworks_list[0]
-            message = parse_homework_status(homework)
-            send_message(message)
+            else:
+                homework = homeworks_list[0]
+                message = parse_homework_status(homework)
+                send_message(message)
+
             # Обновляем время проверки домашки
             current_date = homeworks.get('current_date')
             current_timestamp = current_date
