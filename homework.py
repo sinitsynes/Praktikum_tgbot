@@ -42,6 +42,8 @@ HOMEWORK_STATUSES = {
 
 TIME_SLEEP = 10 * 60
 
+BOT_ERROR = 'Бот упал с ошибкой:'
+
 bot = telegram.Bot(token=TELEGRAM_TOKEN)
 
 
@@ -81,6 +83,8 @@ def get_homeworks(current_timestamp):
             http_error = f'Ошибка ответа сервера. Status: {status_code}'
             logging.error(http_error)
             send_message(http_error)
+            homework_statuses = {}
+            return homework_statuses.json()
 
         return homework_statuses.json()
 
@@ -95,6 +99,9 @@ def get_homeworks(current_timestamp):
         send_message(exception_error)
         sys.exit(f'Бот остановлен из-за ошибки: {exception_error}')
 
+    homework_statuses = {}
+    return homework_statuses.json()
+
 
 def send_message(message):
     logging.info(f'Бот отправит сообщение {message}')
@@ -105,24 +112,16 @@ def main():
     current_timestamp = int(time.time())  # Начальное значение timestamp
     logging.debug('Бот запущен')
 
-    BOT_ERROR = 'Бот упал с ошибкой:'
-
     while True:
         try:
             homeworks = get_homeworks(current_timestamp)
             homeworks_list = homeworks.get('homeworks')
-
-            if len(homeworks_list) == 0:
-                logging.info('Новой домашки нет')
-                time.sleep(TIME_SLEEP)
-            else:
+            if homeworks_list:
                 homework = homeworks_list[0]
                 message = parse_homework_status(homework)
                 send_message(message)
-
             # Обновляем время проверки домашки
-            current_date = homeworks.get('current_date')
-            current_timestamp = current_date
+            current_timestamp = homeworks.get('current_date')
             time.sleep(TIME_SLEEP)
 
         except Exception as e:
