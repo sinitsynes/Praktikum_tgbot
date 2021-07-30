@@ -84,7 +84,6 @@ def get_homeworks(current_timestamp):
             logging.error(http_error)
             send_message(http_error)
             homework_statuses = {}
-            return homework_statuses.json()
 
         return homework_statuses.json()
 
