@@ -83,9 +83,8 @@ def get_homeworks(current_timestamp):
             http_error = f'Ошибка ответа сервера. Status: {status_code}'
             logging.error(http_error)
             send_message(http_error)
-            homework_statuses = {}
-
-        return homework_statuses.json()
+        else:
+            return homework_statuses.json()
 
     except JSONDecodeError:
         decode_error_message = 'Ошибка декодирования JSON в ответе сервера'
@@ -96,10 +95,9 @@ def get_homeworks(current_timestamp):
         exception_error = f'Проблема в get_homeworks(), {e}'
         logging.exception(exception_error)
         send_message(exception_error)
-        sys.exit(f'Бот остановлен из-за ошибки: {exception_error}')
 
     homework_statuses = {}
-    return homework_statuses.json()
+    return homework_statuses
 
 
 def send_message(message):
@@ -120,7 +118,8 @@ def main():
                 message = parse_homework_status(homework)
                 send_message(message)
             # Обновляем время проверки домашки
-            current_timestamp = homeworks.get('current_date')
+            current_timestamp = homeworks.get(
+                'current_date', current_timestamp)
             time.sleep(TIME_SLEEP)
 
         except Exception as e:
