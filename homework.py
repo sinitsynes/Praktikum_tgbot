@@ -81,6 +81,7 @@ def get_homeworks(current_timestamp):
 
         if status_code != 200:
             http_error = f'Ошибка ответа сервера. Status: {status_code}'
+            time.sleep(TIME_SLEEP)  # Добавил после ревью
             logging.error(http_error)
             send_message(http_error)
         else:
